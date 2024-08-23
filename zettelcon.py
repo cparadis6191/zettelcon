@@ -216,7 +216,10 @@ def change_ids_to_filepaths(links, all_filenames):
                 target_candidates.append(other_entry["link_source"])
 
         for filename in all_filenames:
-            if entry["link_target"] in filename:
+            if (
+                entry["link_target"] in filename
+                or entry["link_target"].lower().replace(" ", "_") in filename
+            ):
                 target_candidates.append(filename)
 
         tc_seen = set()
