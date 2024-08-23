@@ -211,9 +211,18 @@ def change_ids_to_filepaths(links, all_filenames):
     for entry in links:
         target_candidates = []
 
+        for other_entry in links:
+            if entry["link_target"] in other_entry["link_source_title"]:
+                target_candidates.append(other_entry["link_source"])
+
         for filename in all_filenames:
             if entry["link_target"] in filename:
                 target_candidates.append(filename)
+
+        tc_seen = set()
+        target_candidates = [
+            t for t in target_candidates if t not in tc_seen and not tc_seen.add(t)
+        ]
 
         # ASSUMES note IDs are unique, also among rest of file names
         if len(target_candidates) == 1:
