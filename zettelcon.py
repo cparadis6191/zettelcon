@@ -79,10 +79,12 @@ def process_directory(
         return
 
     links = []
-    res = pool.map(get_file_outlinks, files)
-    for outlinks in res:
+    first_headers = []
+    res = pool.map(get_file_outlinks_and_first_header, files)
+    for outlinks, header in res:
         links.extend(outlinks)
-    links = change_ids_to_filepaths(links, files)
+        first_headers.append(header)
+    links = change_ids_to_filepaths(links, first_headers, files)
 
     bundled_links_current = bundle_backlinks_per_targetfile(links)
     bundled_links_to_write = {**bundled_links_current}
@@ -208,15 +210,15 @@ def write_backlink_section_to_file(section_text, filepath):
         fh.write(contents_backlinked)
 
 
-def change_ids_to_filepaths(links, all_filenames):
+def change_ids_to_filepaths(links, first_headers, all_filenames):
     out = []
 
     for entry in links:
         target_candidates = []
 
-        for other_entry in links:
-            if entry["link_target"] in other_entry["link_source_title"]:
-                target_candidates.append(other_entry["link_source"])
+        for header in first_headers:
+            if entry["link_target"] in header["title"]:
+                target_candidates.append(header["source"])
 
         for filename in all_filenames:
             if (
@@ -253,13 +255,14 @@ def change_ids_to_filepaths(links, all_filenames):
     return out
 
 
-def get_file_outlinks(path):
+def get_file_outlinks_and_first_header(path):
     with open(path, "r", encoding="utf-8") as fh:
         contents = fh.read()
 
     paragraphs = [para.strip() for para in contents.split("\n")]
 
     outlinks = []
+    first_header_title_and_source = {}
     first_header = ""
 
     for para in paragraphs:
@@ -271,6 +274,7 @@ def get_file_outlinks(path):
             res = REX_TITLE.match(para)
             if res:
                 first_header = res.group(1)
+                first_header_title_and_source = {"title": first_header, "source": path}
 
         links = find_links_in_text(para)
         links = [
@@ -279,7 +283,7 @@ def get_file_outlinks(path):
         ]
         outlinks.extend(links)
 
-    return outlinks
+    return outlinks, first_header_title_and_source
 
 
 def find_links_in_text(paragraph):
