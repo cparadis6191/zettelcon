@@ -164,7 +164,10 @@ def write_backlinks_to_file(backlinks):
         source_file_relative = os.path.relpath(
             source_file, start=os.path.dirname(target_file)
         )
-        entry = "> - [{}]({})\n".format(source_file_title, source_file_relative)
+        entry = "> - [{}]({})\n".format(
+            source_file_title if source_file_title else source_file_relative,
+            source_file_relative,
+        )
 
         for backlink in src_backlinks:
             # ASSUMES two spaces are used for list indentation
