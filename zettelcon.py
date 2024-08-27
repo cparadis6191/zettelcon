@@ -73,8 +73,11 @@ def process_directory(
 
     pool = Pool(processes=nprocs)
 
+    cachefile = os.path.join(folder, CACHEFILENAME)
+
     if clear_backlinks:
         pool.map(clear_backlinks_from_file, files)
+        os.remove(cachefile)
         print("Cleared backlinks from all files")
         return
 
@@ -88,8 +91,6 @@ def process_directory(
 
     bundled_links_current = bundle_backlinks_per_targetfile(links)
     bundled_links_to_write = {**bundled_links_current}
-
-    cachefile = os.path.join(folder, CACHEFILENAME)
 
     if not ignore_cache and os.path.isfile(cachefile):
         with open(cachefile, "rb") as fh:
