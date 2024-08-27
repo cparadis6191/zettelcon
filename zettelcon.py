@@ -86,7 +86,8 @@ def process_directory(
     res = pool.map(get_file_outlinks_and_first_header, files)
     for outlinks, header in res:
         links.extend(outlinks)
-        first_headers.append(header)
+        if header:
+            first_headers.append(header)
     links = change_ids_to_filepaths(links, first_headers, files)
 
     bundled_links_current = bundle_backlinks_per_targetfile(links)
